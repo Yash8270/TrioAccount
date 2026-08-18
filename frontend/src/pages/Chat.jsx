@@ -106,9 +106,9 @@ export default function Chat() {
   const totalFundBalance = data?.balances ? data.balances.reduce((acc, b) => acc + parseFloat(b.total_paid), 0) : 0;
 
   return (
-    <div className="flex animate-fade-in flex-wrap md:flex-nowrap" style={{ gap: '2rem', height: 'calc(100vh - 120px)' }}>
+    <div className="animate-fade-in chat-layout">
       {/* Left Column: Fund Overview */}
-      <div style={{ width: '100%', maxWidth: '320px', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+      <div className="chat-fund-col">
         <div>
           <h2 style={{ fontSize: '1.25rem', marginBottom: '1rem' }}>Fund Overview</h2>
           <div className="card" style={{ backgroundColor: '#F9FAFB', border: 'none' }}>
@@ -150,7 +150,7 @@ export default function Chat() {
       </div>
 
       {/* Right Column: Chat Area */}
-      <div className="flex-col" style={{ flex: 1, backgroundColor: 'white', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      <div className="chat-container flex-col" style={{ backgroundColor: 'white', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', overflow: 'hidden' }}>
         
         {/* Chat Navbar */}
         <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FDF8F3' }}>

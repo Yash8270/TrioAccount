@@ -35,19 +35,9 @@ const Layout = ({ children }) => {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [liveUnread, setLiveUnread] = useState(0);
   const [toasts, setToasts] = useState([]);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const bellRef = useRef(null);
   const location = useLocation();
 
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (bellRef.current && !bellRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+
 
   useEffect(() => {
     fetchChats();
@@ -160,43 +150,7 @@ const Layout = ({ children }) => {
     </>
   );
 
-  const NotificationBell = () => (
-    <div ref={bellRef} style={{ position: 'relative' }}>
-      <button onClick={() => setShowDropdown(!showDropdown)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', position: 'relative' }}>
-        <Bell size={24} />
-        {unreadAlerts > 0 && (
-          <span style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#E02424', color: 'white', borderRadius: '50%', width: '16px', height: '16px', fontSize: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-            {unreadAlerts}
-          </span>
-        )}
-      </button>
-      
-      {showDropdown && (
-        <div className="card animate-fade-in" style={{ position: 'absolute', top: '100%', right: 0, marginTop: '0.5rem', width: '300px', backgroundColor: '#FFFFFF', border: '1px solid var(--border-color)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '1rem', zIndex: 100, display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '400px', overflowY: 'auto' }}>
-          <h4 style={{ margin: 0, paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Notifications</h4>
-          {alerts.length === 0 ? (
-            <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>No alerts at this time.</p>
-          ) : (
-            alerts.slice(0, 1).map(alert => (
-              <div key={alert.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: '0.5rem', backgroundColor: alert.is_read ? 'transparent' : '#FDF2F2', borderRadius: '8px', cursor: 'pointer' }} onClick={() => !alert.is_read && markAlertRead(alert.id)}>
-                <p style={{ margin: 0, fontSize: '0.875rem', color: alert.is_read ? 'var(--text-secondary)' : '#E02424', fontWeight: alert.is_read ? 'normal' : '600' }}>{alert.message}</p>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{new Date(alert.created_at).toLocaleString()}</span>
-              </div>
-            ))
-          )}
-          <div style={{ marginTop: '0.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', textAlign: 'center' }}>
-            <Link 
-              to="/notifications" 
-              onClick={() => setShowDropdown(false)}
-              style={{ color: 'var(--primary-color)', fontSize: '0.875rem', fontWeight: '600', textDecoration: 'none' }}
-            >
-              Explore All →
-            </Link>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+
 
   return (
     <div className="app-container">
@@ -278,6 +232,77 @@ const Layout = ({ children }) => {
           </div>
         ))}
       </div>
+    </div>
+  );
+};
+
+const NotificationBell = () => {
+  const { alerts, fetchAlerts } = useData();
+  const { user } = useAuth();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const bellRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (bellRef.current && !bellRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const unreadAlerts = alerts?.filter(a => !a.is_read).length || 0;
+
+  const markAlertRead = async (id) => {
+    try {
+      const token = localStorage.getItem('token');
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ id })
+      });
+      fetchAlerts(user.email);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  return (
+    <div ref={bellRef} style={{ position: 'relative' }}>
+      <button onClick={() => setShowDropdown(!showDropdown)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', position: 'relative', display: 'flex' }}>
+        <Bell size={24} />
+        {unreadAlerts > 0 && (
+          <span style={{ position: 'absolute', top: -4, right: -4, backgroundColor: '#E02424', color: 'white', borderRadius: '50%', width: '16px', height: '16px', fontSize: '0.6rem', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+            {unreadAlerts}
+          </span>
+        )}
+      </button>
+      
+      {showDropdown && (
+        <div className="card animate-fade-in" style={{ position: 'absolute', top: '100%', right: 0, marginTop: '0.5rem', width: '300px', backgroundColor: '#FFFFFF', border: '1px solid var(--border-color)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '1rem', zIndex: 100, display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '400px', overflowY: 'auto' }}>
+          <h4 style={{ margin: 0, paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Notifications</h4>
+          {alerts.length === 0 ? (
+            <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>No alerts at this time.</p>
+          ) : (
+            alerts.slice(0, 1).map(alert => (
+              <div key={alert.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: '0.5rem', backgroundColor: alert.is_read ? 'transparent' : '#FDF2F2', borderRadius: '8px', cursor: 'pointer' }} onClick={() => !alert.is_read && markAlertRead(alert.id)}>
+                <p style={{ margin: 0, fontSize: '0.875rem', color: alert.is_read ? 'var(--text-secondary)' : '#E02424', fontWeight: alert.is_read ? 'normal' : '600' }}>{alert.message}</p>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{new Date(alert.created_at).toLocaleString()}</span>
+              </div>
+            ))
+          )}
+          <div style={{ marginTop: '0.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '0.5rem', textAlign: 'center' }}>
+            <Link 
+              to="/notifications" 
+              onClick={() => setShowDropdown(false)}
+              style={{ color: 'var(--primary-color)', fontSize: '0.875rem', fontWeight: '600', textDecoration: 'none' }}
+            >
+              Explore All →
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
