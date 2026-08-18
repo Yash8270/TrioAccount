@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
-import { UserPlus, Shield, Users, Building2, Key, X } from 'lucide-react';
+import { UserPlus, Shield, Users, Building2, Key, X, Eye, EyeOff } from 'lucide-react';
 
 export default function Admin() {
   const { user } = useAuth();
@@ -22,6 +22,9 @@ export default function Admin() {
   const [newPassword, setNewPassword] = useState('');
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [modalMsg, setModalMsg] = useState({ text: '', type: '' });
+  
+  const [showAddPassword, setShowAddPassword] = useState(false);
+  const [showModalPassword, setShowModalPassword] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -190,7 +193,25 @@ export default function Admin() {
 
               <div className="input-group">
                 <label className="input-label">Temporary Password</label>
-                <input type="password" required className="input-field" placeholder="••••••••" value={formData.password} onChange={e => setFormData({...formData, password: e.target.value})} style={{ backgroundColor: 'white' }} />
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type={showAddPassword ? 'text' : 'password'} 
+                    required 
+                    className="input-field w-full" 
+                    placeholder="••••••••" 
+                    value={formData.password} 
+                    onChange={e => setFormData({...formData, password: e.target.value})} 
+                    style={{ backgroundColor: 'white', paddingRight: '2.5rem' }} 
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowAddPassword(!showAddPassword)}
+                    style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    tabIndex="-1"
+                  >
+                    {showAddPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
 
               <div className="flex justify-between items-center mb-6 mt-4">
@@ -237,16 +258,27 @@ export default function Admin() {
             <form onSubmit={handlePasswordChange}>
               <div className="input-group">
                 <label className="input-label">New Password</label>
-                <input 
-                  type="password" 
-                  required 
-                  className="input-field" 
-                  value={newPassword} 
-                  onChange={e => setNewPassword(e.target.value)} 
-                />
+                <div style={{ position: 'relative' }}>
+                  <input 
+                    type={showModalPassword ? 'text' : 'password'} 
+                    required 
+                    className="input-field w-full" 
+                    value={newPassword} 
+                    onChange={e => setNewPassword(e.target.value)} 
+                    style={{ paddingRight: '2.5rem' }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowModalPassword(!showModalPassword)}
+                    style={{ position: 'absolute', right: '0.75rem', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    tabIndex="-1"
+                  >
+                    {showModalPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                  </button>
+                </div>
               </div>
               <button type="submit" className="btn btn-primary w-full" disabled={passwordLoading} style={{ marginTop: '1rem' }}>
-                {passwordLoading ? 'Saving...' : 'Save Password'}
+                {passwordLoading ? 'Changing...' : 'Change Password'}
               </button>
             </form>
           </div>

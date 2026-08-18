@@ -8,6 +8,7 @@ export default function Home() {
   const { user } = useAuth();
   const { balancesData: data, fetchBalances, loading, error } = useData();
   const { onlineUsers } = useSocket();
+  const [notifying, setNotifying] = useState(null);
 
   useEffect(() => {
     fetchBalances();
@@ -23,6 +24,7 @@ export default function Home() {
   const overallBalance = data.balances.reduce((acc, b) => acc + parseFloat(b.balance), 0);
 
   const handleNotify = async (member) => {
+    setNotifying(member.email);
     try {
       const token = localStorage.getItem('token');
       const message = `Group Alert: ${member.name} currently owes ₹${Math.abs(member.balance)}`;
@@ -46,6 +48,8 @@ export default function Home() {
       window.dispatchEvent(new CustomEvent('custom_toast', { 
         detail: { title: 'Error', message: 'Failed to send notifications', isAlert: true } 
       }));
+    } finally {
+      setNotifying(null);
     }
   };
 
@@ -137,9 +141,10 @@ export default function Home() {
                     {b.balance < 0 ? (
                       <button 
                         onClick={() => handleNotify(b)}
-                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', backgroundColor: '#FDF2F2', color: '#E02424', border: '1px solid #FBD5D5', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
+                        disabled={notifying === b.email}
+                        style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', backgroundColor: '#FDF2F2', color: '#E02424', border: '1px solid #FBD5D5', borderRadius: '6px', cursor: notifying === b.email ? 'not-allowed' : 'pointer', fontWeight: '600', opacity: notifying === b.email ? 0.7 : 1 }}
                       >
-                        Notify
+                        {notifying === b.email ? 'Notifying...' : 'Notify'}
                       </button>
                     ) : null}
                   </td>
