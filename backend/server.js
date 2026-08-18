@@ -10,17 +10,13 @@ const app = express();
 
 const allowedOrigins = ['http://localhost:5173'];
 if (process.env.FRONTEND_URL) {
-  allowedOrigins.push(process.env.FRONTEND_URL);
+  // Remove any trailing slashes the user might have accidentally added
+  const cleanUrl = process.env.FRONTEND_URL.replace(/\/$/, '');
+  allowedOrigins.push(cleanUrl);
 }
 
 const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
+  origin: allowedOrigins,
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true
 };
