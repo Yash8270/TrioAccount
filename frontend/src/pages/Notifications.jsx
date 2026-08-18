@@ -11,6 +11,7 @@ export default function Notifications() {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBroadcast, setSelectedBroadcast] = useState(null);
+  const [pushStatus, setPushStatus] = useState('');
   
   // Filters
   const [filterMember, setFilterMember] = useState('All');
@@ -102,6 +103,72 @@ export default function Notifications() {
     return true;
   });
 
+  const urlBase64ToUint8Array = (base64String) => {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) { outputArray[i] = rawData.charCodeAt(i); }
+    return outputArray;
+  };
+
+  const handleTestPush = async () => {
+    setPushStatus('Requesting permission...');
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setPushStatus('Push not supported by this browser.');
+      return;
+    }
+    
+    let permission = Notification.permission;
+    if (permission === 'default') {
+      try { permission = await Notification.requestPermission(); } catch (e) {}
+    }
+    
+    if (permission !== 'granted') {
+      setPushStatus('Permission denied by user.');
+      return;
+    }
+
+    try {
+      setPushStatus('Registering Service Worker...');
+      const register = await navigator.serviceWorker.register('/sw.js');
+      
+      setPushStatus('Fetching VAPID key...');
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+      const keyRes = await fetch(`${API_URL}/api/notifications/vapid-public-key`);
+      if (!keyRes.ok) throw new Error('VAPID key missing on backend');
+      const { publicKey } = await keyRes.json();
+
+      setPushStatus('Subscribing device...');
+      const subscription = await register.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(publicKey)
+      });
+
+      setPushStatus('Saving to DB...');
+      const token = localStorage.getItem('token');
+      await fetch(`${API_URL}/api/notifications/subscribe`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ email: user.email, subscription })
+      });
+      
+      setPushStatus('Subscribed! Sending test push...');
+      // Fire a test push
+      await fetch(`${API_URL}/api/notifications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ email: user.email, admin_email: user.email, message: 'Test Push Received successfully!' })
+      });
+
+      setPushStatus('Test Push Sent!');
+      setTimeout(() => setPushStatus(''), 4000);
+    } catch (err) {
+      console.error(err);
+      setPushStatus(`Error: ${err.message}`);
+    }
+  };
+
   return (
     <div className="animate-fade-in flex-col" style={{ gap: '2rem', display: 'flex' }}>
       
@@ -112,6 +179,13 @@ export default function Notifications() {
             <Building2 size={20} />
           </div>
           <h2 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--primary-color)', fontWeight: 'bold' }}>All Notifications</h2>
+        </div>
+        
+        <div className="flex items-center gap-4">
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>{pushStatus}</span>
+          <button onClick={handleTestPush} className="btn btn-outline" style={{ fontSize: '0.75rem', padding: '0.4rem 0.8rem' }}>
+            <BellRing size={16} style={{ marginRight: '0.4rem' }} /> Enable/Test Native Push
+          </button>
         </div>
       </div>
 
