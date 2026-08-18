@@ -18,6 +18,14 @@ router.get('/all', async (req, res) => {
   }
 });
 
+// Get VAPID Public Key
+router.get('/vapid-public-key', (req, res) => {
+  if (!process.env.VAPID_PUBLIC_KEY) {
+    return res.status(500).json({ success: false, error: 'VAPID keys not configured' });
+  }
+  res.json({ success: true, publicKey: process.env.VAPID_PUBLIC_KEY });
+});
+
 // Get all notifications for a specific user
 router.get('/:email', async (req, res) => {
   try {
@@ -120,13 +128,6 @@ router.post('/read', async (req, res) => {
   }
 });
 
-// Get VAPID Public Key
-router.get('/vapid-public-key', (req, res) => {
-  if (!process.env.VAPID_PUBLIC_KEY) {
-    return res.status(500).json({ success: false, error: 'VAPID keys not configured' });
-  }
-  res.json({ success: true, publicKey: process.env.VAPID_PUBLIC_KEY });
-});
 
 // Save Push Subscription
 router.post('/subscribe', async (req, res) => {
