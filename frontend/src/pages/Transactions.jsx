@@ -178,43 +178,7 @@ export default function Transactions() {
         </div>
       </div>
 
-      {showForm && user.isadmin && (
-        <div className="card mb-6 animate-fade-in" style={{ backgroundColor: '#F9FAFB', border: '1px dashed var(--primary-color)' }}>
-          <h3 className="mb-4" style={{ fontSize: '1.25rem' }}>Record a Payment</h3>
-          <form onSubmit={handleSubmit} className="flex items-end gap-4" style={{ flexWrap: 'wrap' }}>
-            <div className="input-group" style={{ flex: '1', minWidth: '150px' }}>
-              <label className="input-label">Payment For</label>
-              <CustomSelect 
-                value={paymentMember} 
-                onChange={setPaymentMember} 
-                options={allUsers} 
-              />
-            </div>
-            <div className="input-group" style={{ flex: '1', minWidth: '150px' }}>
-              <label className="input-label">Amount (₹)</label>
-              <input type="number" required min="1" className="input-field" value={amount} onChange={e => setAmount(e.target.value)} />
-            </div>
-            <div className="input-group" style={{ flex: '1', minWidth: '150px' }}>
-              <label className="input-label">Mode</label>
-              <CustomSelect 
-                value={mode} 
-                onChange={setMode} 
-                options={[
-                  { label: 'Online (UPI)', value: 'online' },
-                  { label: 'Cash', value: 'cash' }
-                ]} 
-              />
-            </div>
-            <div className="input-group" style={{ flex: '1', minWidth: '150px' }}>
-              <label className="input-label">Date</label>
-              <CustomDatePicker value={date} onChange={setDate} />
-            </div>
-            <button type="submit" className="btn btn-primary" style={{ marginBottom: '1.25rem', height: '46px' }}>
-              <Check size={18} style={{ marginRight: '0.5rem' }} /> Save
-            </button>
-          </form>
-        </div>
-      )}
+
 
       <div className="flex justify-between items-center mb-4" style={{ flexWrap: 'wrap', gap: '1rem' }}>
         <h2 style={{ fontSize: '1.5rem', margin: 0 }}>Recent Ledger</h2>
@@ -260,8 +224,9 @@ export default function Transactions() {
         ) : filteredTransactions.length === 0 ? (
           <div className="p-4 text-center text-secondary">No transactions match the selected filters.</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+              <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: '#FDF8F3' }}>
                 <th style={{ padding: '1rem 1.25rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Member</th>
                 <th style={{ padding: '1rem 1.25rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Date</th>
@@ -301,11 +266,12 @@ export default function Transactions() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>
       {showQRModal && (
-        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '400px', backgroundColor: '#FFFFFF', padding: '2rem', textAlign: 'center', position: 'relative' }}>
             <button 
               onClick={() => setShowQRModal(false)} 
@@ -321,6 +287,52 @@ export default function Transactions() {
             </div>
             
             <p style={{ fontSize: '0.875rem', color: 'var(--text-primary)', fontWeight: '600' }}>When you are done, the admin will verify and record the transaction.</p>
+          </div>
+        </div>
+      )}
+
+      {showForm && user.isadmin && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '400px', backgroundColor: '#FFFFFF', padding: '2rem', position: 'relative' }}>
+            <button 
+              onClick={() => setShowForm(false)} 
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+            >
+              <X size={24} />
+            </button>
+            <h3 style={{ fontSize: '1.5rem', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Record a Payment</h3>
+            <form onSubmit={handleSubmit} className="flex-col gap-4">
+              <div className="input-group">
+                <label className="input-label">Payment For</label>
+                <CustomSelect 
+                  value={paymentMember} 
+                  onChange={setPaymentMember} 
+                  options={allUsers} 
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Amount (₹)</label>
+                <input type="number" required min="1" className="input-field w-full" value={amount} onChange={e => setAmount(e.target.value)} />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Mode</label>
+                <CustomSelect 
+                  value={mode} 
+                  onChange={setMode} 
+                  options={[
+                    { label: 'Online (UPI)', value: 'online' },
+                    { label: 'Cash', value: 'cash' }
+                  ]} 
+                />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Date</label>
+                <CustomDatePicker value={date} onChange={setDate} />
+              </div>
+              <button type="submit" className="btn btn-primary w-full mt-2" disabled={adding}>
+                <Check size={18} style={{ marginRight: '0.5rem' }} /> {adding ? 'Saving...' : 'Save Payment'}
+              </button>
+            </form>
           </div>
         </div>
       )}

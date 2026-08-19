@@ -64,7 +64,12 @@ const initializeDB = async () => {
 
     try {
       await connection.execute(`ALTER TABLE chat_status ADD COLUMN seen_at DATETIME`);
-      console.log("Added seen_at column");
+    } catch (e) {
+      // Column might already exist
+    }
+
+    try {
+      await connection.execute(`ALTER TABLE users ADD COLUMN last_active DATETIME`);
     } catch (e) {
       // Column might already exist
     }

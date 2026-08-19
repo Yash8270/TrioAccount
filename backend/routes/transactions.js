@@ -52,36 +52,49 @@ router.post('/', authenticate, async (req, res) => {
 
 // Get balances
 router.get('/balances', authenticate, async (req, res) => {
-  // Start date is August 13, 2026
-  const startDate = new Date('2026-08-13T00:00:00');
-  const today = new Date();
+  const getISTDateString = (date) => {
+    return date.toLocaleString('en-US', { timeZone: 'Asia/Kolkata', year: 'numeric', month: '2-digit', day: '2-digit' });
+  };
   
-  // Calculate difference in days (inclusive of start date)
-  const diffTime = Math.abs(today - startDate);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  const startDateStr = '08/13/2026';
+  const todayStr = getISTDateString(new Date());
+  
+  const startDate = new Date(startDateStr);
+  const todayDate = new Date(todayStr);
+  
+  const diffTime = todayDate - startDate;
+  const diffDays = Math.max(1, Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1); // inclusive of start date
   const expectedAmount = diffDays * 20;
 
   try {
     const [paidRows] = await db.execute('SELECT users.name, SUM(transactions.amount) as total_paid FROM transactions JOIN users ON transactions.email = users.email GROUP BY users.name');
-    const [users] = await db.execute('SELECT email, name, isadmin FROM users');
+    const [users] = await db.execute('SELECT email, name, isadmin, last_active FROM users');
 
     const balances = users.map(user => {
       const paidRow = paidRows.find(r => r.name === user.name);
-      // Ensure we treat the value as a number (DECIMAL returns as string in mysql2 by default sometimes)
       const totalPaid = paidRow ? parseFloat(paidRow.total_paid) : 0;
       
       let balance = totalPaid - expectedAmount;
-      if (user.isadmin) {
-         balance = 0; // Admin doesn't owe
+
+      let pending = 0;
+      let owed = 0;
+
+      if (balance < 0) {
+        const deficit = Math.abs(balance);
+        pending = Math.min(deficit, 20); // Today's 20 is pending
+        owed = deficit - pending; // Anything older than today is owed
       }
 
       return {
         email: user.email,
         name: user.name,
         total_paid: totalPaid,
-        expected_amount: user.isadmin ? totalPaid : expectedAmount,
+        expected_amount: expectedAmount,
         balance: balance,
-        isadmin: user.isadmin
+        pending: pending,
+        owed: owed,
+        isadmin: user.isadmin,
+        last_active: user.last_active
       };
     });
 

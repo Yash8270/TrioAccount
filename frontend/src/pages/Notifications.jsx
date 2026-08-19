@@ -153,8 +153,9 @@ export default function Notifications() {
         ) : filteredNotifs.length === 0 ? (
           <div className="p-4 text-center text-secondary">No notifications found.</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
+          <div style={{ overflowX: 'auto' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+              <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: '#FDF8F3' }}>
                 <th style={{ padding: '1rem 1.25rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Alert Message</th>
                 {!user.isadmin && <th style={{ padding: '1rem 1.25rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Sent To</th>}
@@ -212,6 +213,7 @@ export default function Notifications() {
               })}
             </tbody>
           </table>
+          </div>
         )}
       </div>
 

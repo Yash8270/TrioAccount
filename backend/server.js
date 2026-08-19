@@ -115,6 +115,32 @@ io.on('connection', (socket) => {
       
       const message = { id: result.insertId, sender_email: data.sender_email, content: data.content, timestamp, seenBy: [] };
       io.emit('receive_message', message);
+
+      if (webpush) {
+        const [senderResult] = await db.execute('SELECT name FROM users WHERE email = ?', [data.sender_email]);
+        const senderName = senderResult[0]?.name || data.sender_email.split('@')[0];
+        
+        const [users] = await db.execute('SELECT email FROM users WHERE email != ?', [data.sender_email]);
+        for (const u of users) {
+          const [subs] = await db.execute('SELECT * FROM push_subscriptions WHERE email = ?', [u.email]);
+          for (const sub of subs) {
+            const pushSub = { endpoint: sub.endpoint, keys: { p256dh: sub.p256dh, auth: sub.auth } };
+            const payload = JSON.stringify({
+              title: `New message from ${senderName}`,
+              body: data.content,
+              icon: '/vite.svg',
+              url: '/chat'
+            });
+            webpush.sendNotification(pushSub, payload).catch(err => {
+              if (err.statusCode === 410 || err.statusCode === 404) {
+                db.execute('DELETE FROM push_subscriptions WHERE endpoint = ?', [sub.endpoint]);
+              } else {
+                console.error('Push error for chat:', err);
+              }
+            });
+          }
+        }
+      }
     } catch (err) {
       console.error('Error saving chat:', err);
     }
@@ -133,9 +159,19 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('disconnect', () => {
+  socket.on('disconnect', async () => {
     console.log('User disconnected:', socket.id);
     if (connectedSockets.has(socket.id)) {
+      const email = connectedSockets.get(socket.id);
+      
+      // Update last_active timestamp
+      try {
+        const last_active = new Date().toISOString().slice(0, 19).replace('T', ' ');
+        await db.execute('UPDATE users SET last_active = ? WHERE email = ?', [last_active, email]);
+      } catch (e) {
+        console.error('Error updating last_active:', e);
+      }
+
       connectedSockets.delete(socket.id);
       broadcastOnlineUsers();
     }

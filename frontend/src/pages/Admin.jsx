@@ -102,7 +102,7 @@ export default function Admin() {
         <h2 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--primary-color)', fontWeight: 'bold' }}>Members Administration</h2>
       </div>
 
-      <div className="flex flex-wrap md:flex-nowrap" style={{ gap: '2.5rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2.5rem' }}>
         {/* Left Column: Current Members */}
         <div style={{ flex: '1 1 60%' }}>
           <div className="flex justify-between items-center mb-4">
@@ -112,7 +112,7 @@ export default function Admin() {
 
           <div className="card" style={{ backgroundColor: '#FDF8F3', border: 'none', display: 'flex', flexDirection: 'column', gap: '0.75rem', padding: '1.5rem' }}>
             {members.map((m, idx) => (
-              <div key={m.id || m.email} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: 'white', padding: '1rem 1.25rem', borderRadius: '12px', boxShadow: 'var(--shadow-sm)' }}>
+              <div key={m.id || m.email} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem', backgroundColor: 'white', padding: '1rem 1.25rem', borderRadius: '12px', boxShadow: 'var(--shadow-sm)' }}>
                 <div className="flex items-center gap-4">
                   <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(m.name)}&background=EAF0EC&color=3E6953&rounded=true`} alt="Avatar" style={{ width: '42px', height: '42px' }} />
                   <div>

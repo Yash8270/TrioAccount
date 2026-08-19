@@ -11,6 +11,7 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [typingUsers, setTypingUsers] = useState(new Set());
   const [selectedMsgInfo, setSelectedMsgInfo] = useState(null);
+  const [showMembersModal, setShowMembersModal] = useState(false);
   const [isLocked, setIsLocked] = useState(true);
   const messagesEndRef = useRef(null);
 
@@ -125,6 +126,8 @@ export default function Chat() {
             {data?.balances.map(b => {
               const isMe = b.email === user.email;
               const isOnline = onlineUsers.includes(b.email);
+              const displayBalance = b.balance < 0 ? -b.owed : b.balance;
+
               return (
                 <div key={b.email} className="card" style={{ padding: '1rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: 'none', backgroundColor: '#FFFFFF' }}>
                   <div className="flex items-center gap-3">
@@ -135,12 +138,17 @@ export default function Chat() {
                     <div>
                       <div style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '0.95rem' }}>{isMe ? 'You' : b.name}</div>
                       <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
-                        {b.balance === 0 ? 'Settled up' : b.balance > 0 ? (isMe ? `You are owed` : `Owes you`) : (isMe ? `You owe` : `You are owed`)}
+                        {displayBalance === 0 ? 'Settled up' : displayBalance > 0 ? (isMe ? `You are owed` : `Owes you`) : (isMe ? `You owe` : `You are owed`)}
                       </div>
                     </div>
                   </div>
-                  <div style={{ fontWeight: 'bold', fontSize: '1rem', color: b.balance > 0 ? 'var(--success-color)' : b.balance < 0 ? 'var(--danger-color)' : 'var(--text-primary)' }}>
-                    {b.balance > 0 ? '+' : b.balance < 0 ? '-' : ''}₹{Math.abs(b.balance).toFixed(2)}
+                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.25rem' }}>
+                    <div style={{ fontWeight: 'bold', fontSize: '1rem', color: displayBalance > 0 ? 'var(--success-color)' : displayBalance < 0 ? 'var(--danger-color)' : 'var(--text-primary)' }}>
+                      {displayBalance > 0 ? '+' : displayBalance < 0 ? '-' : ''}₹{Math.abs(displayBalance).toFixed(2)}
+                    </div>
+                    <div style={{ fontSize: '0.65rem', color: isOnline ? 'var(--success-color)' : 'var(--text-secondary)' }}>
+                      {isOnline ? 'Online now' : b.last_active ? `Seen ${new Date(b.last_active).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : 'Offline'}
+                    </div>
                   </div>
                 </div>
               );
@@ -153,12 +161,22 @@ export default function Chat() {
       <div className="chat-container flex-col" style={{ backgroundColor: 'white', borderRadius: '24px', border: '1px solid var(--border-color)', boxShadow: 'var(--shadow-md)', overflow: 'hidden' }}>
         
         {/* Chat Navbar */}
-        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FDF8F3' }}>
+        <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', backgroundColor: '#FDF8F3', cursor: 'pointer' }} onClick={() => setShowMembersModal(true)}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ background: 'var(--primary-color)', color: 'white', padding: '0.4rem', borderRadius: '8px', display: 'flex' }}>
               <Building2 size={20} />
             </div>
-            <h2 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--primary-color)', fontWeight: 'bold' }}>TrioAccount</h2>
+            <h2 style={{ fontSize: '1.25rem', margin: 0, color: 'var(--primary-color)', fontWeight: 'bold' }}>Group Chat</h2>
+            <div style={{ display: 'flex', marginLeft: '0.5rem' }}>
+              {data?.balances?.filter(b => onlineUsers.includes(b.email)).map((b, i) => (
+                <img 
+                  key={b.email} 
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(b.name)}&background=3E6953&color=fff&rounded=true`} 
+                  style={{ width: '24px', height: '24px', borderRadius: '50%', border: '2px solid white', marginLeft: i > 0 ? '-8px' : '0' }} 
+                  alt={b.name}
+                />
+              ))}
+            </div>
           </div>
           {!isLocked && (
             <button onClick={() => setIsLocked(true)} style={{ background: 'none', border: '1px solid var(--border-color)', borderRadius: '8px', padding: '0.5rem 0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', color: 'var(--text-secondary)', backgroundColor: '#FFFFFF', fontWeight: '500', transition: 'all 0.2s' }}>
@@ -167,24 +185,8 @@ export default function Chat() {
           )}
         </div>
 
-        {isLocked ? (
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', backgroundColor: '#F9FAFB', padding: '2rem', textAlign: 'center' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#EAF0EC', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
-              <Lock size={40} />
-            </div>
-            <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>Chat is Locked</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem', maxWidth: '300px' }}>Unlock the chat to view messages and join the conversation.</p>
-            <button 
-              onClick={() => setIsLocked(false)}
-              className="btn btn-primary"
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 2rem', fontSize: '1.1rem' }}
-            >
-              <Unlock size={20} /> Unlock Chat
-            </button>
-          </div>
-        ) : (
-          <>
-            <div className="chat-messages" style={{ flex: 1, backgroundColor: '#FFFFFF', padding: '1.5rem', gap: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+        <div style={{ position: 'relative', flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+          <div className="chat-messages" style={{ flex: 1, backgroundColor: '#FFFFFF', padding: '1.5rem', gap: '1.5rem', overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
           {messages.length === 0 ? null : (() => {
             const lastSeenMap = {};
             messages.forEach((msg, i) => {
@@ -205,9 +207,7 @@ export default function Chat() {
               const prevMsgDate = i > 0 ? new Date(messages[i-1].timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
               const showDate = msgDate !== prevMsgDate;
               
-              // Show all users who have seen this specific message (only for my messages)
               const seenByUsersHere = isMine ? (msg.seenBy?.map(s => s.email) || []) : [];
-
               const senderInitial = senderName.charAt(0).toUpperCase();
               
               let initialColor = 'var(--text-secondary)';
@@ -301,14 +301,37 @@ export default function Chat() {
               placeholder="Type a message..."
               className="input-field"
               style={{ width: '100%', borderRadius: '99px', padding: '1rem 1.5rem', backgroundColor: '#F9FAFB', border: '1px solid var(--border-color)' }}
+              disabled={isLocked}
             />
           </div>
-            <button type="submit" style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: input.trim() ? 'pointer' : 'not-allowed', opacity: input.trim() ? 1 : 0.6, transition: 'all 0.2s' }}>
+            <button type="submit" disabled={isLocked || !input.trim()} style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: (isLocked || !input.trim()) ? 'not-allowed' : 'pointer', opacity: (isLocked || !input.trim()) ? 0.6 : 1, transition: 'all 0.2s' }}>
               <Send size={20} style={{ marginLeft: '4px' }}/>
             </button>
           </form>
-          </>
-        )}
+
+          {isLocked && (
+            <div className="animate-fade-in" style={{ 
+              position: 'absolute', inset: 0, zIndex: 10,
+              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', 
+              backgroundColor: 'rgba(255, 255, 255, 0.4)', 
+              backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+              padding: '2rem', textAlign: 'center' 
+            }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: 'var(--primary-color)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}>
+                <Lock size={40} />
+              </div>
+              <h3 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--text-primary)', textShadow: '0 1px 2px rgba(255,255,255,0.8)' }}>Chat is Locked</h3>
+              <p style={{ color: 'var(--text-primary)', marginBottom: '2rem', maxWidth: '300px', fontWeight: '500' }}>Unlock the chat to view messages and join the conversation.</p>
+              <button 
+                onClick={() => setIsLocked(false)}
+                className="btn btn-primary"
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.75rem 2rem', fontSize: '1.1rem', boxShadow: '0 4px 15px rgba(62, 105, 83, 0.3)' }}
+              >
+                <Unlock size={20} /> Unlock Chat
+              </button>
+            </div>
+          )}
+        </div>
 
         {/* Message Info Modal */}
         {selectedMsgInfo && (
@@ -345,6 +368,37 @@ export default function Chat() {
                       </div>
                       <div style={{ fontSize: '0.75rem', fontWeight: '500', color: seenRecord ? 'var(--primary-color)' : 'var(--text-secondary)' }}>
                         {seenRecord ? `✓✓ ${timeString}` : '✓ Delivered'}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Group Members Modal */}
+        {showMembersModal && (
+          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={(e) => { if(e.target === e.currentTarget) setShowMembersModal(false); }}>
+            <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '350px', backgroundColor: '#FFFFFF', padding: '1.5rem', position: 'relative' }}>
+              <button onClick={() => setShowMembersModal(false)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                <X size={20} />
+              </button>
+              <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Group Members</h3>
+              <div className="flex-col gap-3">
+                {data?.balances.map(b => {
+                  const isOnline = onlineUsers.includes(b.email);
+                  return (
+                    <div key={b.email} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0', borderBottom: '1px solid var(--border-color)' }}>
+                      <div style={{ position: 'relative' }}>
+                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(b.name)}&background=EAF0EC&color=3E6953&rounded=true`} alt="Avatar" style={{ width: '40px', height: '40px' }} />
+                        {isOnline && <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', borderRadius: '50%', backgroundColor: 'var(--success-color)', border: '2px solid white' }}></div>}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '0.95rem' }}>{b.name}</div>
+                        <div style={{ fontSize: '0.75rem', color: isOnline ? 'var(--success-color)' : 'var(--text-secondary)' }}>
+                          {isOnline ? 'Online now' : b.last_active ? `Seen ${new Date(b.last_active).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : 'Offline'}
+                        </div>
                       </div>
                     </div>
                   );

@@ -160,32 +160,13 @@ const Layout = ({ children }) => {
           <Building2 size={24} color="var(--primary-color)" />
           <h1 style={{ fontSize: '1.25rem', margin: 0 }}>TrioAccount</h1>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center" style={{ gap: '1.25rem' }}>
           <NotificationBell />
-          <button onClick={toggleSidebar} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-primary)' }}>
-            {mobileOpen ? <X size={28} /> : <Menu size={28} />}
+          <button onClick={logout} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)', display: 'flex' }}>
+            <LogOut size={22} />
           </button>
         </div>
       </div>
-
-      {/* Sidebar (Mobile Slide-out) */}
-      <aside className={`sidebar ${mobileOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo">
-          <div className="icon"><Building2 size={20} /></div>
-          <div>
-            <h1>TrioAccount</h1>
-            <span>Premium Finance</span>
-          </div>
-        </div>
-        <nav className="sidebar-nav" style={{ flex: 1 }}>
-          <NavLinks />
-        </nav>
-        <div style={{ marginTop: 'auto' }}>
-          <button onClick={logout} className="sidebar-link w-full" style={{ background: 'none', border: 'none', textAlign: 'left' }}>
-            <LogOut size={20} /> <span>Logout</span>
-          </button>
-        </div>
-      </aside>
 
       {/* Desktop Topbar */}
       <div className="flex-col" style={{ flex: 1, width: '100%' }}>
@@ -215,13 +196,32 @@ const Layout = ({ children }) => {
         </main>
       </div>
 
-      {/* Mobile Overlay */}
-      {mobileOpen && (
-        <div 
-          onClick={closeSidebar}
-          style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.4)', zIndex: 30 }}
-        />
-      )}
+      {/* Bottom Nav (Mobile) */}
+      <nav className="bottom-nav md:hidden">
+        <Link to="/" className={`bottom-nav-link ${location.pathname === '/' ? 'active' : ''}`}>
+          <LayoutDashboard size={24} />
+          <span>Home</span>
+        </Link>
+        <Link to="/transactions" className={`bottom-nav-link ${location.pathname === '/transactions' ? 'active' : ''}`}>
+          <ArrowRightLeft size={24} />
+          <span>Transactions</span>
+        </Link>
+        <Link to="/chat" className={`bottom-nav-link ${location.pathname === '/chat' ? 'active' : ''}`} style={{ position: 'relative' }}>
+          <MessageSquare size={24} />
+          <span>Chat</span>
+          {totalUnread > 0 && (
+            <span style={{ position: 'absolute', top: '-4px', right: '4px', backgroundColor: 'var(--success-color)', color: 'white', borderRadius: '50%', width: '16px', height: '16px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyItems: 'center', paddingLeft: '4.5px', paddingTop: '0px', fontWeight: 'bold' }}>
+              {totalUnread}
+            </span>
+          )}
+        </Link>
+        {user?.isadmin === 1 && (
+          <Link to="/admin" className={`bottom-nav-link ${location.pathname === '/admin' ? 'active' : ''}`}>
+            <Users size={24} />
+            <span>Admin</span>
+          </Link>
+        )}
+      </nav>
 
       {/* Toast Container */}
       <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 9999, display: 'flex', flexDirection: 'column', gap: '10px' }}>

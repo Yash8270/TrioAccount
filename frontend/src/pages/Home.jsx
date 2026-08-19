@@ -27,7 +27,12 @@ export default function Home() {
     setNotifying(member.email);
     try {
       const token = localStorage.getItem('token');
-      const message = `Group Alert: ${member.name} currently owes ₹${Math.abs(member.balance)}`;
+      const debtText = member.owed > 0 && member.pending > 0 
+        ? `owes ₹${member.owed} and has ₹${member.pending} pending for today` 
+        : member.owed > 0 
+          ? `owes ₹${member.owed}` 
+          : `has ₹${member.pending} pending for today`;
+      const message = `Group Alert: ${member.name} currently ${debtText}.`;
       
       const promises = data.balances.map(b => 
         fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications`, {
@@ -102,8 +107,9 @@ export default function Home() {
       </div>
       
       <div className="card" style={{ padding: '0', overflow: 'hidden', border: 'none' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+            <thead>
             <tr style={{ borderBottom: '1px solid var(--border-color)', backgroundColor: '#FFFFFF' }}>
               <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Member</th>
               <th style={{ padding: '1.25rem', textAlign: 'left', fontSize: '0.75rem', fontWeight: '600', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Total Paid</th>
@@ -132,9 +138,26 @@ export default function Home() {
                   </td>
                 <td style={{ padding: '1.25rem', fontWeight: '500', color: 'var(--text-secondary)' }}>₹{b.total_paid}</td>
                 <td style={{ padding: '1.25rem' }}>
-                  <span className={`pill ${b.balance > 0 ? 'pill-advance' : b.balance < 0 ? 'pill-owes' : 'pill-settled'}`}>
-                    {b.balance > 0 ? `Advance ₹${b.balance}` : b.balance < 0 ? `Owes ₹${Math.abs(b.balance)}` : 'Settled'}
-                  </span>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {b.balance >= 0 ? (
+                      <span className={`pill ${b.balance > 0 ? 'pill-advance' : 'pill-settled'}`}>
+                        {b.balance > 0 ? `Advance ₹${b.balance}` : 'Settled'}
+                      </span>
+                    ) : (
+                      <>
+                        {b.owed > 0 && (
+                          <span className="pill pill-owes">
+                            Owes ₹{b.owed}
+                          </span>
+                        )}
+                        {b.pending > 0 && (
+                          <span className="pill" style={{ background: '#FEF3C7', color: '#D97706' }}>
+                            Pending ₹{b.pending}
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </div>
                 </td>
                 {user?.isadmin ? (
                   <td style={{ padding: '1.25rem', textAlign: 'right', color: 'var(--text-secondary)' }}>
@@ -154,6 +177,7 @@ export default function Home() {
             })}
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
