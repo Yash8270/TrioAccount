@@ -169,7 +169,7 @@ const Layout = ({ children }) => {
       </div>
 
       {/* Desktop Topbar */}
-      <div className="flex-col" style={{ flex: 1, width: '100%' }}>
+      <div className="flex-col" style={{ flex: 1, width: '100%', minHeight: 0, overflow: 'hidden' }}>
         <header className="topbar">
           <div className="topbar-logo">
             <div style={{ background: 'var(--primary-color)', color: 'white', padding: '0.4rem', borderRadius: '8px', display: 'flex' }}><Building2 size={20} /></div>
