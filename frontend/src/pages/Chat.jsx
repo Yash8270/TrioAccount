@@ -107,6 +107,7 @@ export default function Chat() {
   const totalFundBalance = data?.balances ? data.balances.reduce((acc, b) => acc + parseFloat(b.total_paid), 0) : 0;
 
   return (
+    <>
     <div className="animate-fade-in chat-layout">
       {/* Left Column: Fund Overview */}
       <div className="chat-fund-col">
@@ -333,82 +334,83 @@ export default function Chat() {
           )}
         </div>
 
-        {/* Message Info Modal */}
-        {selectedMsgInfo && (
-          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-            <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '400px', backgroundColor: '#FFFFFF', padding: '2rem', position: 'relative' }}>
-              <button 
-                onClick={() => setSelectedMsgInfo(null)} 
-                style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
-              >
-                <X size={24} />
-              </button>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <Info size={20} /> Message Info
-              </h3>
-              
-              <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#F9FAFB', borderRadius: '12px', wordBreak: 'normal', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
-                {selectedMsgInfo.content}
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ fontWeight: '600', fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Read by</div>
-                {data?.balances?.filter(b => b.email !== selectedMsgInfo.sender_email).map(member => {
-                  const seenRecord = selectedMsgInfo.seenBy?.find(s => s.email === member.email);
-                  const seenAtDate = seenRecord?.seenAt ? new Date(seenRecord.seenAt) : null;
-                  const timeString = seenAtDate && !isNaN(seenAtDate.getTime()) 
-                    ? seenAtDate.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' }) + ' IST'
-                    : 'Seen';
-
-                  return (
-                    <div key={member.email} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: '1px solid var(--border-color)' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=EAF0EC&color=3E6953&rounded=true`} alt="Avatar" style={{ width: '32px', height: '32px' }} />
-                        <span style={{ fontWeight: '500', color: 'var(--text-primary)', fontSize: '0.95rem' }}>{member.name}</span>
-                      </div>
-                      <div style={{ fontSize: '0.75rem', fontWeight: '500', color: seenRecord ? 'var(--primary-color)' : 'var(--text-secondary)' }}>
-                        {seenRecord ? `✓✓ ${timeString}` : '✓ Delivered'}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Group Members Modal */}
-        {showMembersModal && (
-          <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={(e) => { if(e.target === e.currentTarget) setShowMembersModal(false); }}>
-            <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '350px', backgroundColor: '#FFFFFF', padding: '1.5rem', position: 'relative' }}>
-              <button onClick={() => setShowMembersModal(false)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
-                <X size={20} />
-              </button>
-              <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Group Members</h3>
-              <div className="flex-col gap-3">
-                {data?.balances.map(b => {
-                  const isOnline = onlineUsers.includes(b.email);
-                  return (
-                    <div key={b.email} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0', borderBottom: '1px solid var(--border-color)' }}>
-                      <div style={{ position: 'relative' }}>
-                        <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(b.name)}&background=EAF0EC&color=3E6953&rounded=true`} alt="Avatar" style={{ width: '40px', height: '40px' }} />
-                        {isOnline && <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', borderRadius: '50%', backgroundColor: 'var(--success-color)', border: '2px solid white' }}></div>}
-                      </div>
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '0.95rem' }}>{b.name}</div>
-                        <div style={{ fontSize: '0.75rem', color: isOnline ? 'var(--success-color)' : 'var(--text-secondary)' }}>
-                          {isOnline ? 'Online now' : b.last_active ? `Seen ${new Date(b.last_active).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : 'Offline'}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-        )}
-
+        </div>
       </div>
-    </div>
+
+      {/* Message Info Modal */}
+      {selectedMsgInfo && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '400px', backgroundColor: '#FFFFFF', padding: '2rem', position: 'relative' }}>
+            <button 
+              onClick={() => setSelectedMsgInfo(null)} 
+              style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}
+            >
+              <X size={24} />
+            </button>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Info size={20} /> Message Info
+            </h3>
+            
+            <div style={{ marginBottom: '2rem', padding: '1rem', backgroundColor: '#F9FAFB', borderRadius: '12px', wordBreak: 'normal', overflowWrap: 'anywhere', whiteSpace: 'pre-wrap', fontSize: '0.95rem', color: 'var(--text-primary)' }}>
+              {selectedMsgInfo.content}
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ fontWeight: '600', fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Read by</div>
+              {data?.balances?.filter(b => b.email !== selectedMsgInfo.sender_email).map(member => {
+                const seenRecord = selectedMsgInfo.seenBy?.find(s => s.email === member.email);
+                const seenAtDate = seenRecord?.seenAt ? new Date(seenRecord.seenAt) : null;
+                const timeString = seenAtDate && !isNaN(seenAtDate.getTime()) 
+                  ? seenAtDate.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' }) + ' IST'
+                  : 'Seen';
+
+                return (
+                  <div key={member.email} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.5rem 0', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=EAF0EC&color=3E6953&rounded=true`} alt="Avatar" style={{ width: '32px', height: '32px' }} />
+                      <span style={{ fontWeight: '500', color: 'var(--text-primary)', fontSize: '0.95rem' }}>{member.name}</span>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', fontWeight: '500', color: seenRecord ? 'var(--primary-color)' : 'var(--text-secondary)' }}>
+                      {seenRecord ? `✓✓ ${timeString}` : '✓ Delivered'}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Group Members Modal */}
+      {showMembersModal && (
+        <div style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }} onClick={(e) => { if(e.target === e.currentTarget) setShowMembersModal(false); }}>
+          <div className="card animate-fade-in" style={{ width: '100%', maxWidth: '350px', backgroundColor: '#FFFFFF', padding: '1.5rem', position: 'relative' }}>
+            <button onClick={() => setShowMembersModal(false)} style={{ position: 'absolute', top: '1rem', right: '1rem', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+              <X size={20} />
+            </button>
+            <h3 style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: 'var(--primary-color)' }}>Group Members</h3>
+            <div className="flex-col gap-3">
+              {data?.balances.map(b => {
+                const isOnline = onlineUsers.includes(b.email);
+                return (
+                  <div key={b.email} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0', borderBottom: '1px solid var(--border-color)' }}>
+                    <div style={{ position: 'relative' }}>
+                      <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(b.name)}&background=EAF0EC&color=3E6953&rounded=true`} alt="Avatar" style={{ width: '40px', height: '40px' }} />
+                      {isOnline && <div style={{ position: 'absolute', bottom: 0, right: 0, width: '12px', height: '12px', borderRadius: '50%', backgroundColor: 'var(--success-color)', border: '2px solid white' }}></div>}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '0.95rem' }}>{b.name}</div>
+                      <div style={{ fontSize: '0.75rem', color: isOnline ? 'var(--success-color)' : 'var(--text-secondary)' }}>
+                        {isOnline ? 'Online now' : b.last_active ? `Seen ${new Date(b.last_active).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : 'Offline'}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 }
