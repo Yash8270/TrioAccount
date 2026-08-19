@@ -130,7 +130,7 @@ const Layout = ({ children }) => {
             position: 'absolute', 
             top: '2px', 
             right: '-10px', 
-            backgroundColor: 'var(--success-color)', 
+            backgroundColor: '#E02424', 
             color: 'white', 
             borderRadius: '99px', 
             padding: '2px 6px', 
@@ -169,7 +169,7 @@ const Layout = ({ children }) => {
       </div>
 
       {/* Desktop Topbar */}
-      <div className="flex-col" style={{ flex: 1, width: '100%', minHeight: 0, overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', flex: 1, width: '100%', minHeight: 0, overflow: 'hidden' }}>
         <header className="topbar">
           <div className="topbar-logo">
             <div style={{ background: 'var(--primary-color)', color: 'white', padding: '0.4rem', borderRadius: '8px', display: 'flex' }}><Building2 size={20} /></div>
@@ -210,7 +210,7 @@ const Layout = ({ children }) => {
           <MessageSquare size={24} />
           <span>Chat</span>
           {totalUnread > 0 && (
-            <span style={{ position: 'absolute', top: '-4px', right: '4px', backgroundColor: 'var(--success-color)', color: 'white', borderRadius: '50%', width: '16px', height: '16px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyItems: 'center', paddingLeft: '4.5px', paddingTop: '0px', fontWeight: 'bold' }}>
+            <span style={{ position: 'absolute', top: '-4px', right: '4px', backgroundColor: '#E02424', color: 'white', borderRadius: '50%', width: '16px', height: '16px', fontSize: '0.65rem', display: 'flex', alignItems: 'center', justifyItems: 'center', paddingLeft: '4.5px', paddingTop: '0px', fontWeight: 'bold' }}>
               {totalUnread}
             </span>
           )}
@@ -288,7 +288,7 @@ const NotificationBell = () => {
             alerts.slice(0, 1).map(alert => (
               <div key={alert.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: '0.5rem', backgroundColor: alert.is_read ? 'transparent' : '#FDF2F2', borderRadius: '8px', cursor: 'pointer' }} onClick={() => !alert.is_read && markAlertRead(alert.id)}>
                 <p style={{ margin: 0, fontSize: '0.875rem', color: alert.is_read ? 'var(--text-secondary)' : '#E02424', fontWeight: alert.is_read ? 'normal' : '600' }}>{alert.message}</p>
-                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{new Date(alert.created_at).toLocaleString()}</span>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{new Date(alert.created_at.endsWith('Z') ? alert.created_at : alert.created_at.replace(' ', 'T') + 'Z').toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
               </div>
             ))
           )}

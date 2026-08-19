@@ -43,7 +43,7 @@ export default function Notifications() {
   const allSystemMembers = balancesData?.balances || [];
 
   const uniqueMonths = [...new Set(notifications.map(n => {
-    const d = new Date(n.created_at);
+    const d = new Date(n.created_at.endsWith('Z') ? n.created_at : n.created_at.replace(' ', 'T') + 'Z');
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
   }))].sort((a, b) => b.localeCompare(a));
 
@@ -57,7 +57,7 @@ export default function Notifications() {
   const groupedNotifs = [];
   if (user.isadmin) {
     notifications.forEach(n => {
-      const existing = groupedNotifs.find(g => g.message === n.message && Math.abs(new Date(g.created_at) - new Date(n.created_at)) < 60000);
+      const existing = groupedNotifs.find(g => g.message === n.message && Math.abs(new Date(g.created_at.endsWith('Z') ? g.created_at : g.created_at.replace(' ', 'T') + 'Z') - new Date(n.created_at.endsWith('Z') ? n.created_at : n.created_at.replace(' ', 'T') + 'Z')) < 60000);
       if (existing) {
         existing.recipients.push({ email: n.email, name: n.member_name || n.email, is_read: n.is_read });
         if (n.is_read) existing.readCount++;
@@ -88,7 +88,7 @@ export default function Notifications() {
   const itemsToFilter = user.isadmin ? groupedNotifs : notifications;
 
   const filteredNotifs = itemsToFilter.filter(n => {
-    const d = new Date(n.created_at);
+    const d = new Date(n.created_at.endsWith('Z') ? n.created_at : n.created_at.replace(' ', 'T') + 'Z');
     const txMonth = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     
     if (filterMember !== 'All') {
@@ -189,7 +189,7 @@ export default function Notifications() {
                     </td>
                   )}
                   <td style={{ padding: '1.25rem', color: 'var(--text-primary)', fontSize: '0.875rem' }}>
-                    {new Date(n.created_at).toLocaleString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                    {new Date(n.created_at.endsWith('Z') ? n.created_at : n.created_at.replace(' ', 'T') + 'Z').toLocaleString('en-IN', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                   </td>
                   <td style={{ padding: '1.25rem', textAlign: 'center' }}>
                     {user.isadmin ? (

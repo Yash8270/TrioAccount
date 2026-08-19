@@ -479,6 +479,8 @@ h3 { font-size: 1.25rem; }
 @media (min-width: 769px) {
   .app-container {
     flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
   }
   .sidebar {
     display: none;

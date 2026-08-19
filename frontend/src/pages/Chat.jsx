@@ -148,7 +148,7 @@ export default function Chat() {
                       {displayBalance > 0 ? '+' : displayBalance < 0 ? '-' : ''}₹{Math.abs(displayBalance).toFixed(2)}
                     </div>
                     <div style={{ fontSize: '0.65rem', color: isOnline ? 'var(--success-color)' : 'var(--text-secondary)' }}>
-                      {isOnline ? 'Online now' : b.last_active ? `Seen ${new Date(b.last_active).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : 'Offline'}
+                      {isOnline ? 'Online now' : b.last_active ? `Seen ${new Date(b.last_active.endsWith('Z') ? b.last_active : b.last_active.replace(' ', 'T') + 'Z').toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : 'Offline'}
                     </div>
                   </div>
                 </div>
@@ -204,8 +204,8 @@ export default function Chat() {
               const isMine = msg.sender_email === user.email;
               const senderName = data?.balances.find(b => b.email === msg.sender_email)?.name || msg.sender_email.split('@')[0];
               
-              const msgDate = new Date(msg.timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
-              const prevMsgDate = i > 0 ? new Date(messages[i-1].timestamp).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
+              const msgDate = new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp.replace(' ', 'T') + 'Z').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' });
+              const prevMsgDate = i > 0 ? new Date(messages[i-1].timestamp.endsWith('Z') ? messages[i-1].timestamp : messages[i-1].timestamp.replace(' ', 'T') + 'Z').toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : null;
               const showDate = msgDate !== prevMsgDate;
               
               const seenByUsersHere = isMine ? (msg.seenBy?.map(s => s.email) || []) : [];
@@ -248,7 +248,7 @@ export default function Chat() {
                       {msg.content}
                     </div>
                     <div style={{ fontSize: '0.65rem', color: 'var(--text-secondary)', marginTop: '0.25rem', alignSelf: isMine ? 'flex-end' : 'flex-start', display: 'flex', gap: '4px', marginRight: isMine ? '0.5rem' : '0', marginLeft: !isMine ? '0.5rem' : '0' }}>
-                      {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(msg.timestamp.endsWith('Z') ? msg.timestamp : msg.timestamp.replace(' ', 'T') + 'Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       {isMine && <span>✓</span>}
                     </div>
                     {seenByUsersHere.length > 0 && (
@@ -256,7 +256,7 @@ export default function Chat() {
                         {seenByUsersHere.map(email => {
                           const name = data?.balances?.find(b => b.email === email)?.name || email.split('@')[0];
                           const seenRecord = msg.seenBy?.find(s => s.email === email);
-                          const seenAtDate = seenRecord?.seenAt ? new Date(seenRecord.seenAt) : null;
+                          const seenAtDate = seenRecord?.seenAt ? new Date(seenRecord.seenAt.endsWith('Z') ? seenRecord.seenAt : seenRecord.seenAt.replace(' ', 'T') + 'Z') : null;
                           const seenAtStr = seenAtDate && !isNaN(seenAtDate.getTime()) 
                             ? seenAtDate.toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' IST'
                             : 'Unknown Time';
@@ -359,7 +359,7 @@ export default function Chat() {
               <div style={{ fontWeight: '600', fontSize: '0.75rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Read by</div>
               {data?.balances?.filter(b => b.email !== selectedMsgInfo.sender_email).map(member => {
                 const seenRecord = selectedMsgInfo.seenBy?.find(s => s.email === member.email);
-                const seenAtDate = seenRecord?.seenAt ? new Date(seenRecord.seenAt) : null;
+                const seenAtDate = seenRecord?.seenAt ? new Date(seenRecord.seenAt.endsWith('Z') ? seenRecord.seenAt : seenRecord.seenAt.replace(' ', 'T') + 'Z') : null;
                 const timeString = seenAtDate && !isNaN(seenAtDate.getTime()) 
                   ? seenAtDate.toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit' }) + ' IST'
                   : 'Seen';
@@ -401,7 +401,7 @@ export default function Chat() {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: '600', color: 'var(--text-primary)', fontSize: '0.95rem' }}>{b.name}</div>
                       <div style={{ fontSize: '0.75rem', color: isOnline ? 'var(--success-color)' : 'var(--text-secondary)' }}>
-                        {isOnline ? 'Online now' : b.last_active ? `Seen ${new Date(b.last_active).toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : 'Offline'}
+                        {isOnline ? 'Online now' : b.last_active ? `Seen ${new Date(b.last_active.endsWith('Z') ? b.last_active : b.last_active.replace(' ', 'T') + 'Z').toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}` : 'Offline'}
                       </div>
                     </div>
                   </div>
