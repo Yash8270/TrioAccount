@@ -57,6 +57,7 @@ export default function Notifications() {
   const groupedNotifs = [];
   if (user.isadmin) {
     notifications.forEach(n => {
+      if (n.admin_email !== user.email) return;
       const existing = groupedNotifs.find(g => g.message === n.message && Math.abs(new Date(g.created_at.endsWith('Z') ? g.created_at : g.created_at.replace(' ', 'T') + 'Z') - new Date(n.created_at.endsWith('Z') ? n.created_at : n.created_at.replace(' ', 'T') + 'Z')) < 60000);
       if (existing) {
         existing.recipients.push({ email: n.email, name: n.member_name || n.email, is_read: n.is_read });

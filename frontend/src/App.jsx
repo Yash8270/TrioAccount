@@ -252,7 +252,8 @@ const NotificationBell = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const unreadAlerts = alerts?.filter(a => !a.is_read).length || 0;
+  const myAlerts = alerts?.filter(a => a.email === user?.email) || [];
+  const unreadAlerts = myAlerts.filter(a => !a.is_read).length;
 
   const markAlertRead = async (id) => {
     try {
@@ -282,10 +283,10 @@ const NotificationBell = () => {
       {showDropdown && (
         <div className="card animate-fade-in" style={{ position: 'absolute', top: '100%', right: 0, marginTop: '0.5rem', width: '300px', backgroundColor: '#FFFFFF', border: '1px solid var(--border-color)', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', padding: '1rem', zIndex: 100, display: 'flex', flexDirection: 'column', gap: '0.75rem', maxHeight: '400px', overflowY: 'auto' }}>
           <h4 style={{ margin: 0, paddingBottom: '0.5rem', borderBottom: '1px solid var(--border-color)' }}>Notifications</h4>
-          {alerts.length === 0 ? (
+          {myAlerts.length === 0 ? (
             <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--text-secondary)' }}>No alerts at this time.</p>
           ) : (
-            alerts.slice(0, 1).map(alert => (
+            myAlerts.slice(0, 1).map(alert => (
               <div key={alert.id} style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', padding: '0.5rem', backgroundColor: alert.is_read ? 'transparent' : '#FDF2F2', borderRadius: '8px', cursor: 'pointer' }} onClick={() => !alert.is_read && markAlertRead(alert.id)}>
                 <p style={{ margin: 0, fontSize: '0.875rem', color: alert.is_read ? 'var(--text-secondary)' : '#E02424', fontWeight: alert.is_read ? 'normal' : '600' }}>{alert.message}</p>
                 <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)' }}>{new Date(alert.created_at.endsWith('Z') ? alert.created_at : alert.created_at.replace(' ', 'T') + 'Z').toLocaleString('en-IN', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
