@@ -53,7 +53,7 @@ router.get('/:email', async (req, res) => {
 // Create a new notification
 router.post('/', async (req, res) => {
   try {
-    const { email, admin_email, message } = req.body;
+    const { email, admin_email, message, send_email, email_message } = req.body;
     
     if (!email || !admin_email || !message) {
       return res.status(400).json({ success: false, error: 'Missing required fields' });
@@ -78,8 +78,8 @@ router.post('/', async (req, res) => {
       req.io.emit('receive_alert', newNotification);
     }
 
-    // Send Beautiful HTML Email Notification
-    if (process.env.VITE_EMAIL && process.env.VITE_EMAIL_PASSWORD) {
+    // Send Beautiful HTML Email Notification ONLY to targeted user
+    if (send_email && process.env.VITE_EMAIL && process.env.VITE_EMAIL_PASSWORD) {
       const mailOptions = {
         from: `"TrioAccount Alerts" <${process.env.VITE_EMAIL}>`,
         to: email, // The target user's email
@@ -92,7 +92,7 @@ router.post('/', async (req, res) => {
             </div>
             <div style="background-color: white; padding: 25px; border-radius: 8px; border-left: 5px solid #3e6953; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
               <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0; font-weight: 500;">
-                ${message}
+                ${email_message || message}
               </p>
             </div>
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.05);">
