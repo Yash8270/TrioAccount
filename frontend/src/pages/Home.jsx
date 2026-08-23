@@ -3,6 +3,21 @@ import { useAuth } from '../context/AuthContext';
 import { useData } from '../context/DataContext';
 import { useSocket } from '../context/SocketContext';
 import { Wallet, TrendingUp, IndianRupee, Building2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+
+function timeAgo(date) {
+  const seconds = Math.floor((new Date() - date) / 1000);
+  if (seconds < 60) return "just now";
+  const interval = seconds / 60;
+  if (interval < 60) return Math.floor(interval) + (Math.floor(interval) === 1 ? " minute ago" : " minutes ago");
+  const hours = interval / 60;
+  if (hours < 24) return Math.floor(hours) + (Math.floor(hours) === 1 ? " hour ago" : " hours ago");
+  const days = hours / 24;
+  if (days < 30) return Math.floor(days) + (Math.floor(days) === 1 ? " day ago" : " days ago");
+  const months = days / 30;
+  if (months < 12) return Math.floor(months) + (Math.floor(months) === 1 ? " month ago" : " months ago");
+  return Math.floor(months / 12) + " years ago";
+}
 
 export default function Home() {
   const { user } = useAuth();
@@ -133,6 +148,9 @@ export default function Home() {
                       <div>
                         <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{b.name} {b.email === user.email ? '(You)' : ''}</div>
                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{b.email}</div>
+                        <div style={{ fontSize: '0.7rem', color: isOnline ? 'var(--success-color)' : 'var(--text-secondary)', marginTop: '2px', fontWeight: '500' }}>
+                          {isOnline ? 'Online now' : b.last_active ? `Last seen ${timeAgo(new Date(b.last_active.endsWith('Z') ? b.last_active : b.last_active.replace(' ', 'T') + 'Z'))}` : 'Offline'}
+                        </div>
                       </div>
                     </div>
                   </td>

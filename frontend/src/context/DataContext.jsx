@@ -17,11 +17,20 @@ export const DataProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const fetchedRef = React.useRef({
+    balances: false,
+    transactions: false,
+    members: false,
+    chats: false,
+    alerts: false
+  });
+
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   // Transactions API
-  const fetchBalances = useCallback(async () => {
+  const fetchBalances = useCallback(async (force = false) => {
     if (!token) return;
+    if (!force && fetchedRef.current.balances) return;
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/transactions/balances`, {
@@ -34,6 +43,7 @@ export const DataProvider = ({ children }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to fetch balances');
       setBalancesData(data);
+      fetchedRef.current.balances = true;
     } catch (err) {
       setError(err.message);
     } finally {
@@ -41,8 +51,9 @@ export const DataProvider = ({ children }) => {
     }
   }, [token, logout, API_URL]);
 
-  const fetchTransactions = useCallback(async () => {
+  const fetchTransactions = useCallback(async (force = false) => {
     if (!token) return;
+    if (!force && fetchedRef.current.transactions) return;
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/transactions`, {
@@ -55,6 +66,7 @@ export const DataProvider = ({ children }) => {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to fetch transactions');
       setTransactions(data);
+      fetchedRef.current.transactions = true;
     } catch (err) {
       console.error(err);
     } finally {
@@ -73,7 +85,9 @@ export const DataProvider = ({ children }) => {
         body: JSON.stringify(transactionData)
       });
       if (res.ok) {
-        await fetchTransactions();
+        // Force refetch after adding payment
+        await fetchTransactions(true);
+        await fetchBalances(true);
         return { success: true };
       }
       return { success: false };
@@ -84,15 +98,19 @@ export const DataProvider = ({ children }) => {
   };
 
   // Admin API
-  const fetchMembers = useCallback(async () => {
+  const fetchMembers = useCallback(async (force = false) => {
     if (!token) return;
+    if (!force && fetchedRef.current.members) return;
     setLoading(true);
     try {
       const res = await fetch(`${API_URL}/api/admin/members`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      if (res.ok) setMembers(data);
+      if (res.ok) {
+        setMembers(data);
+        fetchedRef.current.members = true;
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -100,8 +118,9 @@ export const DataProvider = ({ children }) => {
     }
   }, [token, API_URL]);
 
-  const fetchChats = useCallback(async () => {
+  const fetchChats = useCallback(async (force = false) => {
     if (!token) return;
+    if (!force && fetchedRef.current.chats) return;
     try {
       const res = await fetch(`${API_URL}/api/chat`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -109,21 +128,28 @@ export const DataProvider = ({ children }) => {
       if (res.ok) {
         const data = await res.json();
         setChats(data);
+        fetchedRef.current.chats = true;
       }
     } catch (err) {
       console.error(err);
     }
   }, [token, API_URL]);
 
-  const fetchAlerts = useCallback(async (email) => {
+  const fetchAlerts = useCallback(async (email, isadmin, force = false) => {
     if (!token || !email) return;
+    if (!force && fetchedRef.current.alerts) return;
     try {
-      const res = await fetch(`${API_URL}/api/notifications/${email}`, {
+      let url = `${API_URL}/api/notifications/${email}`;
+      if (isadmin) {
+        url = `${API_URL}/api/notifications/all`;
+      }
+      const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (res.ok) {
         const data = await res.json();
         setAlerts(data.notifications || []);
+        fetchedRef.current.alerts = true;
       }
     } catch (err) {
       console.error(err);

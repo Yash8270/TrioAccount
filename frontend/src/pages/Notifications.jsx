@@ -7,7 +7,7 @@ import CustomSelect from '../components/CustomSelect';
 
 export default function Notifications() {
   const { user } = useAuth();
-  const { balancesData, fetchBalances } = useData();
+  const { balancesData, fetchBalances, fetchAlerts } = useData();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedBroadcast, setSelectedBroadcast] = useState(null);
@@ -29,8 +29,18 @@ export default function Notifications() {
         });
         const data = await res.json();
         if (data.success) {
-          setNotifications(data.notifications);
+          const marked = data.notifications.map(n => n.email === user.email ? { ...n, is_read: 1 } : n);
+          setNotifications(marked);
         }
+
+        // Mark all personal notifications as read when opening this page
+        await fetch(`${API_URL}/api/notifications/read-all`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ email: user.email })
+        });
+        fetchAlerts(user.email, user.isadmin);
+
       } catch (err) {
         console.error(err);
       }
@@ -38,7 +48,7 @@ export default function Notifications() {
     };
     fetchNotifs();
     fetchBalances();
-  }, [user.email, user.isadmin, fetchBalances]);
+  }, [user.email, user.isadmin, fetchBalances, fetchAlerts]);
 
   const allSystemMembers = balancesData?.balances || [];
 

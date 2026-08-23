@@ -135,15 +135,15 @@ export default function Transactions() {
         {/* Current Balance Card */}
         <div className="card" style={{ 
           display: 'flex', flexDirection: 'column', gap: '1rem', 
-          backgroundColor: myBalanceData?.balance < 0 ? '#FDF2F2' : 'var(--accent-gold)', 
-          color: myBalanceData?.balance < 0 ? '#E02424' : 'white', 
+          backgroundColor: myBalanceData?.balance > 0 ? '#EAF0EC' : (myBalanceData?.owed > 0 ? '#FDF2F2' : (myBalanceData?.pending > 0 ? '#FEF3C7' : 'var(--accent-gold)')), 
+          color: myBalanceData?.balance > 0 ? '#3E6953' : (myBalanceData?.owed > 0 ? '#E02424' : (myBalanceData?.pending > 0 ? '#D97706' : 'white')), 
           border: 'none', 
-          boxShadow: '0 10px 25px -5px rgba(200, 169, 126, 0.4)' 
+          boxShadow: myBalanceData?.balance === 0 ? '0 10px 25px -5px rgba(200, 169, 126, 0.4)' : 'none' 
         }}>
           <div style={{ 
             width: '48px', height: '48px', borderRadius: '12px', 
-            background: myBalanceData?.balance < 0 ? '#FBD5D5' : 'rgba(255,255,255,0.2)', 
-            color: myBalanceData?.balance < 0 ? '#E02424' : 'white', 
+            background: myBalanceData?.balance > 0 ? '#3E6953' : (myBalanceData?.owed > 0 ? '#FBD5D5' : (myBalanceData?.pending > 0 ? '#FDE68A' : 'rgba(255,255,255,0.2)')), 
+            color: myBalanceData?.balance > 0 ? 'white' : (myBalanceData?.owed > 0 ? '#E02424' : (myBalanceData?.pending > 0 ? '#B45309' : 'white')), 
             display: 'flex', alignItems: 'center', justifyContent: 'center' 
           }}>
             <IndianRupee size={24} />
@@ -153,19 +153,25 @@ export default function Transactions() {
             <div className="flex items-center" style={{ gap: '1rem' }}>
               <h2 style={{ 
                 fontSize: '2rem', 
-                color: myBalanceData?.balance < 0 ? '#E02424' : 'white',
+                color: 'inherit',
                 margin: 0,
-                textShadow: myBalanceData?.balance > 0 ? '0 1px 2px rgba(0,0,0,0.2)' : 'none'
+                textShadow: myBalanceData?.balance === 0 ? '0 1px 2px rgba(0,0,0,0.2)' : 'none'
               }}>
-                {myBalanceData?.balance > 0 ? '+' : myBalanceData?.balance < 0 ? '-' : ''}₹{Math.abs(myBalanceData?.balance || 0)}
+                {myBalanceData?.balance > 0 ? '+' : myBalanceData?.owed > 0 ? '-' : ''}₹{myBalanceData?.owed === 0 && myBalanceData?.pending > 0 ? myBalanceData?.pending : Math.abs(myBalanceData?.balance || 0)}
               </h2>
-              {myBalanceData?.balance !== 0 && (
-                <span style={{ 
-                  background: myBalanceData?.balance < 0 ? '#E02424' : 'white', 
-                  color: myBalanceData?.balance < 0 ? 'white' : 'var(--danger-color)', 
-                  padding: '0.2rem 0.6rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: '600' 
-                }}>
-                  {myBalanceData?.balance > 0 ? 'Advance' : 'Owes'}
+              {myBalanceData?.balance > 0 && (
+                <span style={{ background: '#3E6953', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: '600' }}>
+                  Advance
+                </span>
+              )}
+              {myBalanceData?.owed > 0 && (
+                <span style={{ background: '#E02424', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: '600' }}>
+                  Owes
+                </span>
+              )}
+              {myBalanceData?.owed === 0 && myBalanceData?.pending > 0 && (
+                <span style={{ background: '#D97706', color: 'white', padding: '0.2rem 0.6rem', borderRadius: '99px', fontSize: '0.75rem', fontWeight: '600' }}>
+                  Pending
                 </span>
               )}
               {myBalanceData?.balance === 0 && (

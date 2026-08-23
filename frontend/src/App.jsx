@@ -263,7 +263,7 @@ const NotificationBell = () => {
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
         body: JSON.stringify({ id })
       });
-      fetchAlerts(user.email);
+      fetchAlerts(user.email, user.isadmin, true);
     } catch (err) {
       console.error(err);
     }
