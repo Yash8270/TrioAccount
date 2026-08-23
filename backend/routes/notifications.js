@@ -1,6 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.VITE_EMAIL,
+    pass: process.env.VITE_EMAIL_PASSWORD
+  }
+});
 
 // Get all notifications globally (for admin view)
 router.get('/all', async (req, res) => {
@@ -67,6 +76,32 @@ router.post('/', async (req, res) => {
     // Broadcast the new notification to sockets
     if (req.io) {
       req.io.emit('receive_alert', newNotification);
+    }
+
+    // Send Beautiful HTML Email Notification
+    if (process.env.VITE_EMAIL && process.env.VITE_EMAIL_PASSWORD) {
+      const mailOptions = {
+        from: `"TrioAccount Alerts" <${process.env.VITE_EMAIL}>`,
+        to: email, // The target user's email
+        subject: '🔔 New Alert from TrioAccount',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #fdf8f3; padding: 30px; border-radius: 12px; border: 1px solid #eaf0ec;">
+            <div style="text-align: center; margin-bottom: 25px;">
+              <h2 style="color: #3e6953; margin: 0; font-size: 24px; letter-spacing: 0.5px;">TrioAccount</h2>
+              <p style="color: #666; font-size: 14px; margin-top: 5px; text-transform: uppercase; letter-spacing: 1px;">Important Notification</p>
+            </div>
+            <div style="background-color: white; padding: 25px; border-radius: 8px; border-left: 5px solid #3e6953; box-shadow: 0 4px 15px rgba(0,0,0,0.05);">
+              <p style="font-size: 16px; color: #333; line-height: 1.6; margin: 0; font-weight: 500;">
+                ${message}
+              </p>
+            </div>
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid rgba(0,0,0,0.05);">
+              <p style="color: #888; font-size: 12px; margin: 0;">This is an automated alert from your TrioAccount administrator.</p>
+            </div>
+          </div>
+        `
+      };
+      transporter.sendMail(mailOptions).catch(err => console.error('Error sending email:', err));
     }
 
     // Send Native Web Push Notification if configured

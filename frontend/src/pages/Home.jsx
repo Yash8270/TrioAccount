@@ -47,20 +47,16 @@ export default function Home() {
         : member.owed > 0 
           ? `owes ₹${member.owed}` 
           : `has ₹${member.pending} pending for today`;
-      const message = `Group Alert: ${member.name} currently ${debtText}.`;
+      const message = `Reminder: You currently ${debtText}. Please settle your balance.`;
       
-      const promises = data.balances.map(b => 
-        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ email: b.email, admin_email: user.email, message })
-        })
-      );
-      
-      await Promise.all(promises);
+      await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/notifications`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ email: member.email, admin_email: user.email, message })
+      });
       
       window.dispatchEvent(new CustomEvent('custom_toast', { 
-        detail: { title: 'Notification Sent', message: `Alert regarding ${member.name} sent to all members!`, isAlert: false } 
+        detail: { title: 'Notification Sent', message: `Alert sent directly to ${member.name}!`, isAlert: false } 
       }));
       
     } catch (err) {

@@ -81,13 +81,7 @@ export default function Notifications() {
       }
     });
 
-    // Backfill missing members for accurate fraction display
     groupedNotifs.forEach(g => {
-      allSystemMembers.forEach(m => {
-        if (!g.recipients.some(r => r.email === m.email)) {
-          g.recipients.push({ email: m.email, name: m.name || m.email, is_read: 0 });
-        }
-      });
       // Sort recipients: unread first, then by name
       g.recipients.sort((a, b) => {
         if (a.is_read === b.is_read) return a.name.localeCompare(b.name);
