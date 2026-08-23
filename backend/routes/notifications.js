@@ -4,7 +4,9 @@ const db = require('../database');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
-  service: 'gmail',
+  host: 'smtp.gmail.com',
+  port: 587,
+  secure: false, // Use STARTTLS instead of implicit TLS
   auth: {
     user: process.env.VITE_EMAIL,
     pass: process.env.VITE_EMAIL_PASSWORD
