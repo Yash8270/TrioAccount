@@ -128,6 +128,22 @@ router.post('/read', async (req, res) => {
   }
 });
 
+// Mark all notifications as read for a user
+router.post('/read-all', async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, error: 'Missing email' });
+    }
+
+    await db.execute('UPDATE notifications SET is_read = 1 WHERE email = ? AND is_read = 0', [email]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error marking all notifications read:', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 
 // Save Push Subscription
 router.post('/subscribe', async (req, res) => {
