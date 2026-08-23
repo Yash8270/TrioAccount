@@ -126,8 +126,8 @@ router.post('/', async (req, res) => {
           try {
             await req.webpush.sendNotification(pushSubscription, payload);
           } catch (e) {
-            // if gone (410), delete subscription
-            if (e.statusCode === 410 || e.statusCode === 404) {
+            // if gone (410, 404) or invalid VAPID (403), delete subscription
+            if (e.statusCode === 410 || e.statusCode === 404 || e.statusCode === 403) {
               await db.execute('DELETE FROM push_subscriptions WHERE id = ?', [sub.id]);
             } else {
               console.error('Error sending push:', e);
