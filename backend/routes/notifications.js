@@ -1,17 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../database');
-const nodemailer = require('nodemailer');
-
-const transporter = nodemailer.createTransport({
-  host: 'smtp.gmail.com',
-  port: 587,
-  secure: false, // Use STARTTLS instead of implicit TLS
-  auth: {
-    user: process.env.VITE_EMAIL,
-    pass: process.env.VITE_EMAIL_PASSWORD
-  }
-});
+// Nodemailer removed in favor of Resend API
 
 // Get all notifications globally (for admin view)
 router.get('/all', async (req, res) => {
@@ -81,12 +71,9 @@ router.post('/', async (req, res) => {
     }
 
     // Send Beautiful HTML Email Notification ONLY to targeted user
-    if (send_email && process.env.VITE_EMAIL && process.env.VITE_EMAIL_PASSWORD) {
-      const mailOptions = {
-        from: `"TrioAccount Alerts" <${process.env.VITE_EMAIL}>`,
-        to: email, // The target user's email
-        subject: '🔔 New Alert from TrioAccount',
-        html: `
+    if (send_email && process.env.RESEND_API_KEY) {
+      try {
+        const emailHTML = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #fdf8f3; padding: 30px; border-radius: 12px; border: 1px solid #eaf0ec;">
             <div style="text-align: center; margin-bottom: 25px;">
               <h2 style="color: #3e6953; margin: 0; font-size: 24px; letter-spacing: 0.5px;">TrioAccount</h2>
@@ -101,9 +88,24 @@ router.post('/', async (req, res) => {
               <p style="color: #888; font-size: 12px; margin: 0;">This is an automated alert from your TrioAccount administrator.</p>
             </div>
           </div>
-        `
-      };
-      transporter.sendMail(mailOptions).catch(err => console.error('Error sending email:', err));
+        `;
+        
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
+          },
+          body: JSON.stringify({
+            from: 'TrioAccount Alerts <onboarding@resend.dev>',
+            to: email, // Note: On Resend's free tier, you can only send emails to the address you verified with Resend!
+            subject: '🔔 New Alert from TrioAccount',
+            html: emailHTML
+          })
+        });
+      } catch (err) {
+        console.error('Error sending email via Resend:', err);
+      }
     }
 
     // Send Native Web Push Notification if configured
