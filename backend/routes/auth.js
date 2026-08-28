@@ -8,13 +8,9 @@ const JWT_SECRET = process.env.JWT_SECRET || 'trio_account_secret';
 
 // Login route
 router.post('/login', async (req, res) => {
-  const { name, password } = req.body;
-  console.log(name)
-  console.log(password)
-
   try {
+    const { name, password } = req.body;
     const [rows] = await db.execute('SELECT * FROM users WHERE name = ?', [name]);
-    console.log(rows)
     if (rows.length === 0) return res.status(401).json({ error: 'Invalid credentials' });
 
     const user = rows[0];

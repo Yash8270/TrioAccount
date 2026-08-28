@@ -71,7 +71,7 @@ router.post('/', async (req, res) => {
     }
 
     // Send Beautiful HTML Email Notification ONLY to targeted user
-    if (send_email && process.env.RESEND_API_KEY) {
+    if (send_email && process.env.VITE_APPS_SCRIPT_URL) {
       try {
         const emailHTML = `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background-color: #fdf8f3; padding: 30px; border-radius: 12px; border: 1px solid #eaf0ec;">
@@ -90,21 +90,17 @@ router.post('/', async (req, res) => {
           </div>
         `;
         
-        await fetch('https://api.resend.com/emails', {
+        await fetch(process.env.VITE_APPS_SCRIPT_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${process.env.RESEND_API_KEY}`
-          },
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
           body: JSON.stringify({
-            from: 'TrioAccount Alerts <onboarding@resend.dev>',
-            to: email, // Note: On Resend's free tier, you can only send emails to the address you verified with Resend!
+            to: email,
             subject: '🔔 New Alert from TrioAccount',
             html: emailHTML
           })
         });
       } catch (err) {
-        console.error('Error sending email via Resend:', err);
+        console.error('Error sending email via Apps Script:', err);
       }
     }
 
